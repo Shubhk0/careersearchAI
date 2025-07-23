@@ -1,0 +1,30 @@
+name: Update Job Listings
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Runs daily at 2am UTC
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
+      - name: Run crawler
+        run: npm start
+      - name: Commit and push if jobs.json changed
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          if [[ `git status --porcelain jobs.json` ]]; then
+            git add jobs.json
+            git commit -m "Update jobs.json [auto]"
+            git push
+          fi 

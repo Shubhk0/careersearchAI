@@ -1,0 +1,25 @@
+# Node.js
+node_modules/
+
+# Output
+jobs.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Puppeteer/Chrome
+.chromium
+chrome-profile*
+
+# VSCode
+.vscode/
+
+# Env
+.env
+.env.* 

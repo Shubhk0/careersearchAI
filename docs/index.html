@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Career Search AI</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+  <header class="main-header">
+    <h1>Career Search AI</h1>
+    <p class="subtitle">Search and explore jobs from top companies, all in one place.</p>
+  </header>
+  <div class="container">
+    <div class="filters-row">
+      <input type="text" id="search" placeholder="🔍 Search for jobs, companies, or locations...">
+      <label for="location-filter" class="filter-label">Filter by Location:</label>
+      <select id="location-filter">
+        <option value="">All Locations</option>
+      </select>
+    </div>
+    <div id="jobs-list"></div>
+  </div>
+  <!-- Modal for job description -->
+  <div id="job-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-btn" id="close-modal">&times;</span>
+      <div id="modal-job-content"></div>
+    </div>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html> 

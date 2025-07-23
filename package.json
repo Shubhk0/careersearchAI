@@ -1,0 +1,14 @@
+{
+  "name": "careersearch-crawler",
+  "version": "1.0.0",
+  "description": "Modular crawler for consolidating job listings from company career pages. Each company has its own module.",
+  "main": "crawler/index.js",
+  "scripts": {
+    "start": "node crawler/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "puppeteer": "^22.15.0"
+  }
+}

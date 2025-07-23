@@ -17,14 +17,16 @@ jobs:
           node-version: '18'
       - name: Install dependencies
         run: npm install
-      - name: Run crawler
-        run: npm start
-      - name: Commit and push if jobs.json changed
+      - name: Run modular crawler
+        run: node crawler/index.js
+      - name: Copy jobs.json to docs/
+        run: cp jobs.json docs/jobs.json
+      - name: Commit and push if jobs.json or docs/jobs.json changed
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          if [[ `git status --porcelain jobs.json` ]]; then
-            git add jobs.json
-            git commit -m "Update jobs.json [auto]"
+          if [[ `git status --porcelain jobs.json docs/jobs.json` ]]; then
+            git add jobs.json docs/jobs.json
+            git commit -m "Update jobs.json and docs/jobs.json [auto]"
             git push
           fi 

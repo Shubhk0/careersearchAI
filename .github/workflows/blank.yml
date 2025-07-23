@@ -1,0 +1,41 @@
+# This is a basic workflow to help you get started with Actions
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+name: Update Job Listings
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  schedule:
+    - cron: '0 2 * * *' # Runs daily at 2am UTC
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
+      - name: Run modular crawler
+        run: node crawler/index.js
+      - name: Copy jobs.json to docs/
+        run: cp jobs.json docs/jobs.json
+      - name: Commit and push if jobs.json or docs/jobs.json changed
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          if [[ `git status --porcelain jobs.json docs/jobs.json` ]]; then
+            git add jobs.json docs/jobs.json
+            git commit -m "Update jobs.json and docs/jobs.json [auto]"
+            git push
+          fi 

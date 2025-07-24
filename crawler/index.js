@@ -1,6 +1,8 @@
 const fs = require('fs');
 const { crawlBarclays } = require('./barclays');
 const { crawlGoogle } = require('./google');
+const { crawlAmazon } = require('./amazon');
+const { crawlAccenture } = require('./accenture');
 
 async function main() {
   let allJobs = [];
@@ -18,8 +20,20 @@ async function main() {
     allJobs = allJobs.concat(googleJobs);
   }
 
-  if (arg !== 'barclays' && arg !== 'google' && arg !== 'all') {
-    console.log('Usage: node crawler/index.js [barclays|google|all]');
+  if (arg === 'amazon' || arg === 'all') {
+    console.log('Crawling Amazon...');
+    const amazonJobs = await crawlAmazon();
+    allJobs = allJobs.concat(amazonJobs);
+  }
+
+  if (arg === 'accenture' || arg === 'all') {
+    console.log('Crawling Accenture...');
+    const accentureJobs = await crawlAccenture();
+    allJobs = allJobs.concat(accentureJobs);
+  }
+
+  if (![ 'barclays', 'google', 'amazon', 'accenture', 'all' ].includes(arg)) {
+    console.log('Usage: node crawler/index.js [barclays|google|amazon|accenture|all]');
     process.exit(1);
   }
 

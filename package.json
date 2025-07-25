@@ -4,11 +4,19 @@
   "description": "Modular crawler for consolidating job listings from company career pages. Each company has its own module.",
   "main": "crawler/index.js",
   "scripts": {
-    "start": "node crawler/index.js"
+    "dev": "npm --prefix careersearchai-next run dev",
+    "build": "npm --prefix careersearchai-next run build",
+    "start": "npm --prefix careersearchai-next run start"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.52.1",
+    "animejs": "^4.1.1",
+    "autoprefixer": "^10.4.21",
     "axios": "^1.6.0",
     "cheerio": "^1.0.0-rc.12",
-    "puppeteer": "^22.15.0"
+    "postcss": "^8.5.6",
+    "puppeteer": "^22.15.0",
+    "tailwindcss": "^4.1.11",
+    "three": "^0.178.0"
   }
 }

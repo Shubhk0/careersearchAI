@@ -1,13 +1,25 @@
 const puppeteer = require('puppeteer');
 
 const BASE_URL = 'https://search.jobs.barclays/search-jobs';
-const PARALLEL_JOBS = 40;
-const MAX_PAGES = 40;
+const PARALLEL_JOBS = 40; // Increased parallelism
+const MAX_PAGES = 40; // Max number of pages to crawl
+
+async function setBlockResources(page) {
+  await page.setRequestInterception(true);
+  page.on('request', (req) => {
+    if ([ 'image', 'stylesheet', 'font' ].includes(req.resourceType())) {
+      req.abort();
+    } else {
+      req.continue();
+    }
+  });
+}
 
 async function crawlBarclays() {
   console.log('--- Starting Barclays Crawler ---');
   const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
   const page = await browser.newPage();
+  await setBlockResources(page);
   let jobs = [];
   let jobLinks = new Set();
   let pageNum = 1;
@@ -19,15 +31,23 @@ async function crawlBarclays() {
   try {
     await page.waitForSelector('button', { timeout: 10000 });
     const buttons = await page.$$('button');
+    let accepted = false;
     for (const btn of buttons) {
       const text = (await page.evaluate(el => el.textContent, btn)).trim();
       if (/accept/i.test(text)) {
         await btn.click();
+        console.log(`Clicked cookie button: '${text}'`);
+        accepted = true;
         await new Promise(r => setTimeout(r, 1000));
         break;
       }
     }
-  } catch {}
+    if (!accepted) {
+      console.log('No Accept button found. Button texts:', await Promise.all(buttons.map(btn => page.evaluate(el => el.textContent, btn))));
+    }
+  } catch (e) {
+    console.log('No cookie dialog detected.');
+  }
 
   let lastFirstTitle = null;
   while (hasNext && pageNum <= MAX_PAGES) {
@@ -36,12 +56,14 @@ async function crawlBarclays() {
     // Extract jobs from the current page only
     const pageJobs = await page.evaluate(() => {
       const jobs = [];
+      // Find all <strong> tags that are likely job titles
       const strongs = Array.from(document.querySelectorAll('strong'));
       strongs.forEach(strong => {
         const title = strong.textContent.trim();
         let location = '';
         let posted = '';
         let link = '';
+        // Find the closest ancestor div (job card)
         let card = strong.closest('div');
         if (card) {
           const locEl = card.querySelector('.job-location');
@@ -59,8 +81,7 @@ async function crawlBarclays() {
             title,
             location,
             link,
-            company: 'Barclays',
-            // posted, // REMOVE posted key
+            company: 'Barclays'
           });
         }
       });
@@ -117,6 +138,7 @@ async function crawlBarclays() {
   // Scrape job descriptions and detail posted date for each job in parallel batches using a pool of 40 pages
   async function scrapeJobDetailWithPage(job, page, idx, total) {
     try {
+      await setBlockResources(page);
       console.log(`  [${idx + 1}/${total}] Scraping: ${job.title}`);
       await page.goto(job.link, { waitUntil: 'networkidle2', timeout: 30000 });
       await page.waitForSelector('.ats-description', { timeout: 10000 });
@@ -141,7 +163,9 @@ async function crawlBarclays() {
   // Create a pool of 40 pages (tabs)
   const detailPages = [];
   for (let i = 0; i < PARALLEL_JOBS; i++) {
-    detailPages.push(await browser.newPage());
+    const detailPage = await browser.newPage();
+    await setBlockResources(detailPage);
+    detailPages.push(detailPage);
   }
   for (let i = 0; i < jobs.length; i += PARALLEL_JOBS) {
     const batch = jobs.slice(i, i + PARALLEL_JOBS);

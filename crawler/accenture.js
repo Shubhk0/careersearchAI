@@ -1,13 +1,25 @@
 const puppeteer = require('puppeteer');
 
 const BASE_URL = 'https://www.accenture.com/in-en/careers/jobsearch';
-const PARALLEL_JOBS = 20;
+const PARALLEL_JOBS = 40; // Increased parallelism
 const MAX_PAGES = 40;
+
+async function setBlockResources(page) {
+  await page.setRequestInterception(true);
+  page.on('request', (req) => {
+    if ([ 'image', 'stylesheet', 'font' ].includes(req.resourceType())) {
+      req.abort();
+    } else {
+      req.continue();
+    }
+  });
+}
 
 async function crawlAccenture() {
   console.log('--- Starting Accenture Crawler ---');
   const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
   const page = await browser.newPage();
+  await setBlockResources(page);
   let jobs = [];
   let jobLinks = new Set();
   let pageNum = 1;
@@ -90,9 +102,10 @@ async function crawlAccenture() {
 
   console.log(`Extracted ${jobs.length} unique jobs from Accenture.`);
 
-  // Scrape job descriptions for each job in parallel batches using a pool of 20 pages
+  // Scrape job descriptions for each job in parallel batches using a pool of 40 pages
   async function scrapeJobDetailWithPage(job, page, idx, total) {
     try {
+      await setBlockResources(page);
       console.log(`  [${idx + 1}/${total}] Scraping: ${job.title}`);
       await page.goto(job.link, { waitUntil: 'networkidle2', timeout: 30000 });
       await page.waitForSelector('.rad-job-detail', { timeout: 10000 });
@@ -108,10 +121,12 @@ async function crawlAccenture() {
   }
 
   let detailedJobs = [];
-  // Create a pool of 20 pages (tabs)
+  // Create a pool of 40 pages (tabs)
   const detailPages = [];
   for (let i = 0; i < PARALLEL_JOBS; i++) {
-    detailPages.push(await browser.newPage());
+    const detailPage = await browser.newPage();
+    await setBlockResources(detailPage);
+    detailPages.push(detailPage);
   }
   for (let i = 0; i < jobs.length; i += PARALLEL_JOBS) {
     const batch = jobs.slice(i, i + PARALLEL_JOBS);

@@ -1,24 +1,33 @@
 # Node.js
 node_modules/
-
-
-
-# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Next.js
+.next/
+
+# Local env files
+.env
+.env.*
+
+# Output
+out/
+
+# Logs
+logs/
+*.log
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Puppeteer/Chrome
-.chromium
-chrome-profile*
-
-# VSCode
+# Misc
+coverage/
+.idea/
 .vscode/
+*.swp
 
-# Env
-.env
-.env.* 
+# Build
+build/
+dist/ 

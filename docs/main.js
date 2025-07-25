@@ -1,3 +1,5 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
 // --- Three.js Futuristic Background ---
 const canvas = document.getElementById('bg-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
@@ -38,19 +40,27 @@ window.addEventListener('resize', () => {
 
 // --- End Three.js ---
 
+const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // TODO: Replace with your Supabase project URL
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // TODO: Replace with your Supabase anon/public key
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 let jobs = [];
 let filteredJobs = [];
 let currentLocation = '';
 
 async function loadJobs() {
   try {
-    const res = await fetch('jobs.json');
-    jobs = await res.json();
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('*')
+      .order('posted_detail', { ascending: false });
+    if (error) throw error;
+    jobs = data;
     populateLocationFilter(jobs);
     filteredJobs = jobs;
     renderJobs(filteredJobs);
   } catch (e) {
-    document.getElementById('jobs-list').innerHTML = '<p>Could not load jobs.</p>';
+    document.getElementById('jobs-list').innerHTML = '<p>Could not load jobs from Supabase.</p>';
   }
 }
 
